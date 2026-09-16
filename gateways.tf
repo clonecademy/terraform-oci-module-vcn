@@ -26,3 +26,18 @@ output "nat_gateway_public_ip" {
   description = "Public IP address that private subnet traffic is translated to"
   value       = oci_core_nat_gateway.main.nat_ip
 }
+
+resource "oci_core_service_gateway" "main" {
+  compartment_id = var.compartment_id
+  vcn_id         = oci_core_vcn.main.id
+  display_name   = "main-service-gateway"
+
+  services {
+    service_id = local.oracle_services_network.id
+  }
+}
+
+output "service_gateway_id" {
+  description = "OCID of the service gateway to the Oracle Services Network"
+  value       = oci_core_service_gateway.main.id
+}
