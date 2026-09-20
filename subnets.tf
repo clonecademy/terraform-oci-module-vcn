@@ -19,19 +19,10 @@ resource "oci_core_default_route_table" "public" {
   }
 }
 
+# A security list applies to every VNIC in the subnet, so it carries only rules that are safe for anything placed here:
+# path MTU discovery and unrestricted egress. Per-host ingress belongs on that host's network security group.
 resource "oci_core_default_security_list" "public" {
   manage_default_resource_id = oci_core_vcn.main.default_security_list_id
-
-  ingress_security_rules {
-    protocol    = local.protocol_tcp
-    source      = local.anywhere_cidr
-    source_type = "CIDR_BLOCK"
-
-    tcp_options {
-      min = 22
-      max = 22
-    }
-  }
 
   ingress_security_rules {
     protocol    = local.protocol_icmp
