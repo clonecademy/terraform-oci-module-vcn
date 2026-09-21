@@ -110,3 +110,7 @@ Hosts in the private subnet accept SSH from anywhere in the VCN, for example fro
 - The module always creates exactly one public subnet and one private subnet, both regional.
 - Only IPv4 is supported.
 - This module manages the VCN's default route table and default security list. Don't also manage them elsewhere.
+
+## License
+
+Licensed under the [GNU Affero General Public License v3.0](LICENSE).
