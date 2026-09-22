@@ -12,6 +12,8 @@ A Terraform module that provisions an Oracle Cloud Infrastructure (OCI) Virtual 
 | Service gateway | `main-service-gateway` | Private access to all Oracle Services Network services (Object Storage, etc.) |
 | Public subnet | `main-public-subnet` | DNS label `public`, default CIDR `10.0.0.0/24`, public IPs allowed |
 | Private subnet | `main-private-subnet` | DNS label `private`, default CIDR `10.0.1.0/24`, public IPs prohibited |
+| Log group | `main-vcn-flow-logs` | Holds the VCN flow log |
+| VCN flow log | `main-vcn-flow-log` | Flow logs for the whole VCN (both subnets), category `all` |
 
 Routing:
 
@@ -29,9 +31,10 @@ module "vcn" {
   compartment_id = var.compartment_id
 
   # Optional; defaults shown
-  vcn_cidr_blocks           = ["10.0.0.0/16"]
-  public_subnet_cidr_block  = "10.0.0.0/24"
-  private_subnet_cidr_block = "10.0.1.0/24"
+  vcn_cidr_blocks                 = ["10.0.0.0/16"]
+  public_subnet_cidr_block        = "10.0.0.0/24"
+  private_subnet_cidr_block       = "10.0.1.0/24"
+  vcn_flow_logs_retention_in_days = 30
 }
 ```
 
@@ -52,6 +55,7 @@ The module doesn't configure the `oci` provider. Configure it in your root modul
 | `vcn_cidr_blocks` | `list(string)` | `["10.0.0.0/16"]` | IPv4 CIDR blocks for the VCN. Must be a non-empty list. Both subnet CIDR blocks must fall inside these blocks. |
 | `public_subnet_cidr_block` | `string` | `"10.0.0.0/24"` | IPv4 CIDR block of the public subnet. |
 | `private_subnet_cidr_block` | `string` | `"10.0.1.0/24"` | IPv4 CIDR block of the private subnet. |
+| `vcn_flow_logs_retention_in_days` | `number` | `30` | Retention period for the VCN flow log. OCI Logging only accepts 30-day increments up to 180 (30, 60, 90, 120, 150, 180). |
 
 Every CIDR input must be valid IPv4 CIDR notation, or the module fails validation.
 
@@ -67,6 +71,8 @@ Every CIDR input must be valid IPv4 CIDR notation, or the module fails validatio
 | `nat_gateway_public_ip` | Public IP address that private subnet traffic is translated to. Add it to allowlists on external services. |
 | `service_gateway_id` | OCID of the service gateway. |
 | `oracle_services_network_cidr_block` | Service CIDR label that is routed to the service gateway. |
+| `vcn_flow_log_group_id` | OCID of the log group containing the VCN flow log. |
+| `vcn_flow_log_id` | OCID of the VCN flow log. |
 
 ## Security
 
@@ -103,6 +109,10 @@ resource "oci_core_network_security_group_security_rule" "https" {
 ```
 
 Hosts in the private subnet accept SSH from anywhere in the VCN, for example from a bastion in the public subnet.
+
+## Logging
+
+The module enables a VCN flow log (category `all`) covering both subnets, in its own log group. OCI's Logging service gives Always Free tenancies 10 GB/month of ingestion at no cost, shared across every log in the tenancy — not just this one. A high-traffic VCN, or other logs sharing the tenancy, can exceed that allowance; ingestion beyond it is billed at $0.05/GB. This module has no way to cap ingestion from the outside, so watch usage if you're relying on staying free.
 
 ## Limitations
 
