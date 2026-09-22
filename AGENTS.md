@@ -26,6 +26,7 @@ terraform validate              # syntax, types, and references
   - `networks.tf`: the VCN, the Oracle Services Network data source, and the shared `locals` (protocol numbers `protocol_all`/`protocol_icmp`/`protocol_tcp`, `anywhere_cidr`, `oracle_services_network`). Use these locals rather than literal `"6"`, `"1"`, or `"0.0.0.0/0"`.
   - `gateways.tf`: internet, NAT, and service gateways.
   - `subnets.tf`: route tables, security lists, and the two subnets.
+  - `flow_logs.tf`: the VCN flow log and its log group.
 - Every resource is named `main` or `public`/`private`. Display names are hardcoded as `main-*` and aren't configurable.
 - CIDR variables have `validation` blocks that use `can(cidrhost(...))`. New CIDR inputs should do the same.
 
